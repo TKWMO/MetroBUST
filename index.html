@@ -31,7 +31,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-      }
 
       /*
         Always render in a phone-like aspect ratio (works on desktop + mobile).
@@ -40,12 +39,20 @@
       .phone {
         position: relative;
         height: 100dvh;
-        max-height: 100vh;
+        padding: 0 var(--expiry-pad, 3px);
         aspect-ratio: 9 / 19.5;
         width: auto;
+
+      /* Actual text node we measure and size */
+      .datetime > span {
+        display: inline-block;
+        font-size: var(--expiry-font-size, 66px);
+      }
         max-width: 100vw;
         overflow: hidden;
         background: #000;
+        /* Let text scale relative to this container (video width). */
+        container-type: inline-size;
       }
 
       @media (orientation: landscape) {
@@ -68,7 +75,7 @@
         height: 100%;
         object-fit: cover;
         object-position: 50% 100%;
-        transform: scale(1.05);
+        transform: scale(1.01);
         transform-origin: 50% 100%;
         background: #000;
         opacity: 0;
@@ -83,16 +90,22 @@
 
       .datetime {
         position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: calc(env(safe-area-inset-bottom) + 8%);
+        left: 0;
+        right: 0;
+        bottom: calc(env(safe-area-inset-bottom) + 9%);
         color: #fff;
         font-weight: 700;
-        font-size: clamp(17px, 4.4vw, 34px);
+        font-size: var(--expiry-font-size, 66px);
         letter-spacing: 0.5px;
         line-height: 1.1;
+        display: flex;
+        justify-content: center;
         text-align: center;
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum" 1;
         white-space: nowrap;
+        padding: 0 15px;
+        box-sizing: border-box;
       }
 
       /* Prevent text selection / callouts on iOS */
@@ -147,7 +160,9 @@
           </video>
         </div>
 
-        <div id="expiry" class="datetime" aria-label="Expiration time">--/--/---- --:-- --</div>
+        <div id="expiry" class="datetime" aria-label="Expiration time">
+          <span id="expiryText">--/--/---- --:-- --</span>
+        </div>
       </div>
     </div>
 
@@ -175,7 +190,41 @@
       function updateExpiry() {
         const now = new Date();
         const adjusted = new Date(now.getTime() + OFFSET_HOURS * 60 * 60 * 1000);
-        document.getElementById("expiry").textContent = formatAsTicketDate(adjusted);
+        document.getElementById("expiryText").textContent = formatAsTicketDate(adjusted);
+      }
+
+      function fitExpiryText() {
+        const el = document.getElementById("expiry");
+        const textEl = document.getElementById("expiryText");
+        if (!el) return;
+        if (!textEl) return;
+
+        const cs = getComputedStyle(el);
+        const paddingLeft = parseFloat(cs.paddingLeft) || 0;
+        const paddingRight = parseFloat(cs.paddingRight) || 0;
+        const available = Math.max(0, el.clientWidth - paddingLeft - paddingRight);
+        if (available <= 0) return;
+
+        // Binary search the largest font size that fits within the available width.
+        let lo = 12;
+        let hi = 120;
+        let best = lo;
+
+        for (let i = 0; i < 12; i++) {
+          const mid = (lo + hi) / 2;
+          el.style.setProperty("--expiry-font-size", `${mid}px`);
+
+          // Force a sync measurement.
+          const fits = textEl.scrollWidth <= available;
+          if (fits) {
+            best = mid;
+            lo = mid;
+          } else {
+            hi = mid;
+          }
+        }
+
+        el.style.setProperty("--expiry-font-size", `${Math.floor(best)}px`);
       }
 
       // iOS may block autoplay unless muted+inline; attempt play anyway.
@@ -220,12 +269,19 @@
       // Set the expiry once on load. Do NOT continuously update — this
       // shows a snapshot of when the ticket was last checked.
       updateExpiry();
+      fitExpiryText();
 
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden) {
           updateExpiry();
+          fitExpiryText();
           tryPlayAll();
         }
+      });
+
+      // Re-fit text if the container size changes (rotation, address bar show/hide, etc).
+      window.addEventListener("resize", () => {
+        fitExpiryText();
       });
 
       // Swipe left/right to switch between the two looping videos (mobile).
