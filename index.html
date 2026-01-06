@@ -2,9 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#000000" />
     <title>MetroBust</title>
+
+    <link rel="preload" as="video" href="Render%20Vids/0105.mp4" type="video/mp4" fetchpriority="high" />
+    <link rel="preload" as="video" href="Render%20Vids/0105(1).mp4" type="video/mp4" />
+    <link rel="preload" as="video" href="Render%20Vids/0105(2).mp4" type="video/mp4" />
     <style>
       :root {
         /* Easy tweak: raise/lower timestamp (bigger = higher). */
@@ -90,13 +98,12 @@
 
       .ticket-video {
         position: absolute;
-        left: 0;
-        right: 0;
+        left: 50%;
         bottom: 0;
-        width: 100%;
+        transform: translateX(-50%);
+        width: auto;
+        min-width: 100%;
         height: calc(100% * var(--video-zoom, 1.06));
-        object-fit: cover;
-        object-position: 50% 100%;
         background: #000;
         opacity: 0;
         pointer-events: none;
