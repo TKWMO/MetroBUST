@@ -12,6 +12,9 @@
 
         /* Easy tweak: distance from left/right edges for the timestamp. */
         --expiry-pad: 30px;
+
+        /* Easy tweak: make the video slightly taller than the viewport (crop from top). */
+        --video-zoom: 1.06;
       }
 
       html,
@@ -87,13 +90,13 @@
 
       .ticket-video {
         position: absolute;
-        inset: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         width: 100%;
-        height: 100%;
+        height: calc(100% * var(--video-zoom, 1.06));
         object-fit: cover;
         object-position: 50% 100%;
-        transform: scale(1.1);
-        transform-origin: 50% 100%;
         background: #000;
         opacity: 0;
         pointer-events: none;
@@ -112,6 +115,7 @@
         bottom: calc(env(safe-area-inset-bottom) + var(--expiry-bottom, 10%));
         color: #fff;
         font-weight: 700;
+        
         letter-spacing: 0.5px;
         line-height: 1.1;
         display: flex;
