@@ -58,6 +58,20 @@
         container-type: inline-size;
       }
 
+      /*
+        On real mobile browsers, fill the entire screen.
+        (Avoid the "phone frame" effect that can leave unused margins.)
+      */
+      @media (hover: none) and (pointer: coarse) {
+        .phone {
+          width: 100vw;
+          max-width: 100vw;
+          height: 100dvh;
+          max-height: 100dvh;
+          aspect-ratio: auto;
+        }
+      }
+
       @media (orientation: landscape) {
         /* In landscape, keep a portrait viewport centered with black bars */
         .phone {
@@ -78,7 +92,7 @@
         height: 100%;
         object-fit: cover;
         object-position: 50% 100%;
-        transform: scale(1.15);
+        transform: scale(1.1);
         transform-origin: 50% 100%;
         background: #000;
         opacity: 0;
@@ -106,7 +120,7 @@
         font-variant-numeric: tabular-nums;
         font-feature-settings: "tnum" 1;
         white-space: nowrap;
-        padding: 0 var(--expiry-pad, 50px);
+        padding: 0 var(--expiry-pad, 20px);
         box-sizing: border-box;
       }
 
